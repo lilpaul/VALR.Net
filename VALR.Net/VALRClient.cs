@@ -24,6 +24,8 @@ namespace VALR.Net
         private const string CurrencyPairsEndpoint = "public/pairs";
         private const string PairsOrderTypesEndpoint = "public/ordertypes";
         private const string PairOrderTypesEndpoint = "public/{}/ordertypes";
+        private const string MarketSummariesEndpoint = "public/marketsummary";
+        private const string MarketSummaryEndpoint = "public/{}/marketsummary";
         #endregion
 
         #region constructor/destructor
@@ -117,6 +119,42 @@ namespace VALR.Net
             if (!result)
                 return WebCallResult<IEnumerable<OrderType>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
             return new WebCallResult<IEnumerable<OrderType>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
+
+        /// <summary>
+        /// Gets a list of supported order types for each pair
+        /// </summary>
+        /// <param name="ct">Cancellation token</param><returns></returns>
+        public WebCallResult<IEnumerable<VALRMarketSummary>> GetMarketSummary(CancellationToken ct = default) => GetMarketSummaryAsync(ct).Result;
+
+        /// <summary>
+        /// Gets a list of supported order types for each pair
+        /// </summary>
+        /// <param name="ct">Cancellation token</param><returns></returns>
+        public async Task<WebCallResult<IEnumerable<VALRMarketSummary>>> GetMarketSummaryAsync(CancellationToken ct = default)
+        {
+            var result = await SendRequest<IEnumerable<VALRMarketSummary>>(GetUrl(MarketSummariesEndpoint, ApiVersion1), HttpMethod.Get, ct).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<IEnumerable<VALRMarketSummary>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<IEnumerable<VALRMarketSummary>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
+
+        /// <summary>
+        /// Gets a list of supported order types for a single pair
+        /// </summary>
+        /// <param name="ct">Cancellation token</param><returns></returns>
+        public WebCallResult<VALRMarketSummary> GetMarketSummary(string pair, CancellationToken ct = default) => GetMarketSummaryAsync(pair, ct).Result;
+
+        /// <summary>
+        /// Gets a list of supported order types for a single pair
+        /// </summary>
+        /// <param name="ct">Cancellation token</param><returns></returns>
+        public async Task<WebCallResult<VALRMarketSummary>> GetMarketSummaryAsync(string pair, CancellationToken ct = default)
+        {
+            var result = await SendRequest<VALRMarketSummary>(GetUrl(FillPathParameter(MarketSummaryEndpoint, pair), ApiVersion1), HttpMethod.Get, ct).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<VALRMarketSummary>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<VALRMarketSummary>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
         }
         #endregion
         #endregion
