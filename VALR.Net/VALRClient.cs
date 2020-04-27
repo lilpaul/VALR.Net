@@ -20,7 +20,8 @@ namespace VALR.Net
 
         private const string ApiVersion1 = "1";
 
-        private const string CurrenciesEndpoint = "public/currencies";
+        private const string CurrenciesEndpoint = "public/currencies"; 
+        private const string CurrencyPairsEndpoint = "public/pairs";
         #endregion
 
         #region constructor/destructor
@@ -60,6 +61,25 @@ namespace VALR.Net
                 return WebCallResult<IEnumerable<VALRCurrency>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
             return new WebCallResult<IEnumerable<VALRCurrency>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
         }
+
+        /// <summary>
+        /// Gets a list of supported currency pairs
+        /// </summary>
+        /// <param name="ct">Cancellation token</param><returns></returns>
+        public WebCallResult<IEnumerable<VALRCurrencyPair>> GetCurrencyPairs(CancellationToken ct = default) => GetCurrencyPairsAsync(ct).Result;
+
+        /// <summary>
+        /// Gets a list of supported currency pairs
+        /// </summary>
+        /// <param name="ct">Cancellation token</param><returns></returns>
+        public async Task<WebCallResult<IEnumerable<VALRCurrencyPair>>> GetCurrencyPairsAsync(CancellationToken ct = default)
+        {
+            var result = await SendRequest<IEnumerable<VALRCurrencyPair>>(GetUrl(CurrencyPairsEndpoint, ApiVersion1), HttpMethod.Get, ct).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<IEnumerable<VALRCurrencyPair>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<IEnumerable<VALRCurrencyPair>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
+
         #endregion
         #endregion
 
