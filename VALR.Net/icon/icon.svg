@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 141 42" id="logo-light-mode">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 141 42" id="logo-light-mode">
   <g fill="none" fill-rule="evenodd">
     <path d="M18.525 33.771L.535 3.01A2 2 0 012.26 0h25.262L16.991 17.906a1.992 1.992 0 00.726 2.737 2.027 2.027 0 002.76-.72L32.195 0H46.74a2 2 0 011.726 3.01L26.226 41.034a2 2 0 01-3.453 0l-1.918-3.28 12.04-20.47a1.992 1.992 0 00-.725-2.737 2.027 2.027 0 00-2.76.72L18.525 33.77z" fill="#486DE8"></path>
   </g>
