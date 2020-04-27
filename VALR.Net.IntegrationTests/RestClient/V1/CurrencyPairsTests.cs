@@ -10,7 +10,7 @@ namespace VALR.Net.IntegrationTests.RestClient.V1
         }
 
         [Test]
-        public void GetCurrencyList()
+        public void GetCurrencyPairsList()
         {
             var client = new VALRClient();
             var result = client.GetCurrencyPairs();

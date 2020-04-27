@@ -22,7 +22,8 @@ namespace VALR.Net
 
         private const string CurrenciesEndpoint = "public/currencies"; 
         private const string CurrencyPairsEndpoint = "public/pairs";
-        private const string PairOrderTypesEndpoint = "public/ordertypes";
+        private const string PairsOrderTypesEndpoint = "public/ordertypes";
+        private const string PairOrderTypesEndpoint = "public/{}/ordertypes";
         #endregion
 
         #region constructor/destructor
@@ -93,10 +94,29 @@ namespace VALR.Net
         /// <param name="ct">Cancellation token</param><returns></returns>
         public async Task<WebCallResult<IEnumerable<VALRPairOrderType>>> GetPairOrderTypesAsync(CancellationToken ct = default)
         {
-            var result = await SendRequest<IEnumerable<VALRPairOrderType>>(GetUrl(PairOrderTypesEndpoint, ApiVersion1), HttpMethod.Get, ct).ConfigureAwait(false);
+            var result = await SendRequest<IEnumerable<VALRPairOrderType>>(GetUrl(PairsOrderTypesEndpoint, ApiVersion1), HttpMethod.Get, ct).ConfigureAwait(false);
             if (!result)
                 return WebCallResult<IEnumerable<VALRPairOrderType>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
             return new WebCallResult<IEnumerable<VALRPairOrderType>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
+
+
+        /// <summary>
+        /// Gets a list of supported order types for a single pair
+        /// </summary>
+        /// <param name="ct">Cancellation token</param><returns></returns>
+        public WebCallResult<IEnumerable<OrderType>> GetPairOrderTypes(string pair, CancellationToken ct = default) => GetPairOrderTypesAsync(pair, ct).Result;
+
+        /// <summary>
+        /// Gets a list of supported order types for a single pair
+        /// </summary>
+        /// <param name="ct">Cancellation token</param><returns></returns>
+        public async Task<WebCallResult<IEnumerable<OrderType>>> GetPairOrderTypesAsync(string pair, CancellationToken ct = default)
+        {
+            var result = await SendRequest<IEnumerable<OrderType>>(GetUrl(FillPathParameter(PairOrderTypesEndpoint, pair), ApiVersion1), HttpMethod.Get, ct).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<IEnumerable<OrderType>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<IEnumerable<OrderType>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
         }
         #endregion
         #endregion
