@@ -22,6 +22,7 @@ namespace VALR.Net
 
         private const string CurrenciesEndpoint = "public/currencies"; 
         private const string CurrencyPairsEndpoint = "public/pairs";
+        private const string PairOrderTypesEndpoint = "public/ordertypes";
         #endregion
 
         #region constructor/destructor
@@ -80,6 +81,23 @@ namespace VALR.Net
             return new WebCallResult<IEnumerable<VALRCurrencyPair>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
         }
 
+        /// <summary>
+        /// Gets a list of supported order types for each pair
+        /// </summary>
+        /// <param name="ct">Cancellation token</param><returns></returns>
+        public WebCallResult<IEnumerable<VALRPairOrderType>> GetPairOrderTypes(CancellationToken ct = default) => GetPairOrderTypesAsync(ct).Result;
+
+        /// <summary>
+        /// Gets a list of supported order types for each pair
+        /// </summary>
+        /// <param name="ct">Cancellation token</param><returns></returns>
+        public async Task<WebCallResult<IEnumerable<VALRPairOrderType>>> GetPairOrderTypesAsync(CancellationToken ct = default)
+        {
+            var result = await SendRequest<IEnumerable<VALRPairOrderType>>(GetUrl(PairOrderTypesEndpoint, ApiVersion1), HttpMethod.Get, ct).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<IEnumerable<VALRPairOrderType>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<IEnumerable<VALRPairOrderType>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
         #endregion
         #endregion
 
