@@ -1,4 +1,5 @@
 ﻿using CryptoExchange.Net;
+using CryptoExchange.Net.Authentication;
 using CryptoExchange.Net.Objects;
 using System;
 using System.Collections.Generic;
@@ -46,6 +47,25 @@ namespace VALR.Net
         #endregion
 
         #region methods
+        /// <summary>
+        /// Sets the default options to use for new clients
+        /// </summary>
+        /// <param name="options">The options to use for new clients</param>
+        public static void SetDefaultOptions(VALRClientOptions options)
+        {
+            defaultOptions = options;
+        }
+
+        /// <summary>
+        /// Set the API key and secret
+        /// </summary>
+        /// <param name="apiKey">The api key</param>
+        /// <param name="apiSecret">The api secret</param>
+        public void SetApiCredentials(string apiKey, string apiSecret)
+        {
+            SetAuthenticationProvider(new VALRAuthenticationProvider(new ApiCredentials(apiKey, apiSecret)));
+        }
+
         #region Version1
         /// <summary>
         /// Gets a list of supported currencies
@@ -156,6 +176,8 @@ namespace VALR.Net
                 return WebCallResult<VALRMarketSummary>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
             return new WebCallResult<VALRMarketSummary>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
         }
+
+
         #endregion
         #endregion
 
