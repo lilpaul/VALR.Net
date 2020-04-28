@@ -27,6 +27,7 @@ namespace VALR.Net
         private const string PairOrderTypesEndpoint = "public/{}/ordertypes";
         private const string MarketSummariesEndpoint = "public/marketsummary";
         private const string MarketSummaryEndpoint = "public/{}/marketsummary";
+        private const string BalancesEndpoint = "account/balances";
         #endregion
 
         #region constructor/destructor
@@ -177,6 +178,22 @@ namespace VALR.Net
             return new WebCallResult<VALRMarketSummary>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
         }
 
+        /// <summary>
+        /// Get all funds
+        /// </summary>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns></returns>
+        public WebCallResult<IEnumerable<VALRWallet>> GetBalances(CancellationToken ct = default) => GetBalancesAsync(ct).Result;
+
+        /// <summary>
+        /// Get all funds
+        /// </summary>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns></returns>
+        public async Task<WebCallResult<IEnumerable<VALRWallet>>> GetBalancesAsync(CancellationToken ct = default)
+        {
+            return await SendRequest<IEnumerable<VALRWallet>>(GetUrl(BalancesEndpoint, ApiVersion1), HttpMethod.Post, ct, null, true).ConfigureAwait(false);
+        }
 
         #endregion
         #endregion
