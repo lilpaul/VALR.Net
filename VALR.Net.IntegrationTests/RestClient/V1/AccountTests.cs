@@ -22,15 +22,28 @@ namespace VALR.Net.IntegrationTests.RestClient.V1
             var apikey = viewOnly.GetSection("ApiKey").Value;
             var apiSecret = viewOnly.GetSection("ApiSecret").Value;
 
-            options = new VALRClientOptions();
-            options.ApiCredentials = new ApiCredentials(apikey, apiSecret);
-            client = new VALRClient(options);
+            client = new VALRClient();
+            client.SetApiCredentials(apikey, apiSecret);
         }
 
         [Test]
         public void GetBalances()
         {
             var result = client.GetBalances();
+            Assert.IsTrue(result.Success);
+        }
+        
+        [Test]
+        public void GetTransactionHistory()
+        {
+            var result = client.GetTransactionHistory(0, 100);
+            Assert.IsTrue(result.Success);
+        }
+
+        [Test]
+        public void GetTradeHistory()
+        {
+            var result = client.GetTradeHistory("ETHZAR", 100);
             Assert.IsTrue(result.Success);
         }
     }

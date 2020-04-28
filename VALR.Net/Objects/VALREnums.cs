@@ -19,4 +19,12 @@ namespace VALR.Net.Objects
         [EnumMember(Value = "SIMPLE")]
         Simple
     }
+
+    public enum TradeSide
+    {
+        [EnumMember(Value = "buy")]
+        Buy,
+        [EnumMember(Value = "sell")]
+        Sell,
+    }
 }

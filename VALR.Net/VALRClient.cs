@@ -28,6 +28,8 @@ namespace VALR.Net
         private const string MarketSummariesEndpoint = "public/marketsummary";
         private const string MarketSummaryEndpoint = "public/{}/marketsummary";
         private const string BalancesEndpoint = "account/balances";
+        private const string TransactionHistoryEndpoint = "account/transactionhistory?skip={}&limit={}";
+        private const string TradeHistoryEndpoint = "account/{}/tradehistory?limit={}";
         #endregion
 
         #region constructor/destructor
@@ -127,12 +129,14 @@ namespace VALR.Net
         /// <summary>
         /// Gets a list of supported order types for a single pair
         /// </summary>
+        /// <param name="pair">Trading pair eg. "BTCZAR"</param><returns></returns>
         /// <param name="ct">Cancellation token</param><returns></returns>
         public WebCallResult<IEnumerable<OrderType>> GetPairOrderTypes(string pair, CancellationToken ct = default) => GetPairOrderTypesAsync(pair, ct).Result;
 
         /// <summary>
         /// Gets a list of supported order types for a single pair
         /// </summary>
+        /// <param name="pair">Trading pair eg. "BTCZAR"</param><returns></returns>
         /// <param name="ct">Cancellation token</param><returns></returns>
         public async Task<WebCallResult<IEnumerable<OrderType>>> GetPairOrderTypesAsync(string pair, CancellationToken ct = default)
         {
@@ -143,13 +147,13 @@ namespace VALR.Net
         }
 
         /// <summary>
-        /// Gets a list of supported order types for each pair
+        /// Gets a list of all market summaries
         /// </summary>
         /// <param name="ct">Cancellation token</param><returns></returns>
         public WebCallResult<IEnumerable<VALRMarketSummary>> GetMarketSummary(CancellationToken ct = default) => GetMarketSummaryAsync(ct).Result;
 
         /// <summary>
-        /// Gets a list of supported order types for each pair
+        /// Gets a list of all market summaries
         /// </summary>
         /// <param name="ct">Cancellation token</param><returns></returns>
         public async Task<WebCallResult<IEnumerable<VALRMarketSummary>>> GetMarketSummaryAsync(CancellationToken ct = default)
@@ -161,14 +165,16 @@ namespace VALR.Net
         }
 
         /// <summary>
-        /// Gets a list of supported order types for a single pair
+        /// Gets a market summary for a single pair
         /// </summary>
+        /// <param name="pair">Trading pair eg. "BTCZAR"</param><returns></returns>
         /// <param name="ct">Cancellation token</param><returns></returns>
         public WebCallResult<VALRMarketSummary> GetMarketSummary(string pair, CancellationToken ct = default) => GetMarketSummaryAsync(pair, ct).Result;
 
         /// <summary>
-        /// Gets a list of supported order types for a single pair
+        /// Gets a market summary for a single pair
         /// </summary>
+        /// <param name="pair">Trading pair eg. "BTCZAR"</param><returns></returns>
         /// <param name="ct">Cancellation token</param><returns></returns>
         public async Task<WebCallResult<VALRMarketSummary>> GetMarketSummaryAsync(string pair, CancellationToken ct = default)
         {
@@ -179,14 +185,14 @@ namespace VALR.Net
         }
 
         /// <summary>
-        /// Get all funds
+        /// Get all account balances
         /// </summary>
         /// <param name="ct">Cancellation token</param>
         /// <returns></returns>
         public WebCallResult<IEnumerable<VALRWallet>> GetBalances(CancellationToken ct = default) => GetBalancesAsync(ct).Result;
 
         /// <summary>
-        /// Get all funds
+        /// Get all account balances
         /// </summary>
         /// <param name="ct">Cancellation token</param>
         /// <returns></returns>
@@ -198,6 +204,53 @@ namespace VALR.Net
             return new WebCallResult<IEnumerable<VALRWallet>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
         }
 
+        /// <summary>
+        /// Get transactions from account history
+        /// </summary>
+        /// <param name="ct">Cancellation token</param>
+        /// <param name="skip">Number of records to skip (pagination)</param><returns></returns>
+        /// <param name="limit">Number of records to fetch (pagination)</param><returns></returns>
+        /// <returns></returns>
+        public WebCallResult<IEnumerable<VALRTransaction>> GetTransactionHistory(int skip = 0, int limit = 100, CancellationToken ct = default) => GetTransactionHistoryAsync(skip, limit, ct).Result;
+
+        /// <summary>
+        /// Get transactions from account history
+        /// </summary>
+        /// <param name="ct">Cancellation token</param>
+        /// <param name="skip">Number of records to skip (pagination)</param><returns></returns>
+        /// <param name="limit">Number of records to fetch (pagination)</param><returns></returns>
+        /// <returns></returns>
+        public async Task<WebCallResult<IEnumerable<VALRTransaction>>> GetTransactionHistoryAsync(int skip = 0, int limit = 100, CancellationToken ct = default)
+        {
+            var result = await SendRequest<IEnumerable<VALRTransaction>>(GetUrl(FillPathParameter(TransactionHistoryEndpoint, skip.ToString(), limit.ToString()), ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<IEnumerable<VALRTransaction>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<IEnumerable<VALRTransaction>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
+
+        /// <summary>
+        /// Get recent account trade history for a specific trading pair
+        /// </summary>
+        /// <param name="ct">Cancellation token</param>
+        /// <param name="pair">Trading pair eg. "BTCZAR"</param><returns></returns>
+        /// <param name="limit">Number of records to fetch (100 max)</param><returns></returns>
+        /// <returns></returns>
+        public WebCallResult<IEnumerable<VALRPairTrade>> GetTradeHistory(string pair, int limit = 100, CancellationToken ct = default) => GetTradeHistoryAsync(pair, limit, ct).Result;
+
+        /// <summary>
+        /// Get recent account trade history for a specific trading pair
+        /// </summary>
+        /// <param name="ct">Cancellation token</param>
+        /// <param name="pair">Trading pair eg. "BTCZAR"</param><returns></returns>
+        /// <param name="limit">Number of records to fetch (100 max)</param><returns></returns>
+        /// <returns></returns>
+        public async Task<WebCallResult<IEnumerable<VALRPairTrade>>> GetTradeHistoryAsync(string pair, int limit = 100, CancellationToken ct = default)
+        {
+            var result = await SendRequest<IEnumerable<VALRPairTrade>>(GetUrl(FillPathParameter(TradeHistoryEndpoint, pair, limit.ToString()), ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<IEnumerable<VALRPairTrade>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<IEnumerable<VALRPairTrade>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
         #endregion
         #endregion
 
