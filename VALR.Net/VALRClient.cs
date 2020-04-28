@@ -192,7 +192,10 @@ namespace VALR.Net
         /// <returns></returns>
         public async Task<WebCallResult<IEnumerable<VALRWallet>>> GetBalancesAsync(CancellationToken ct = default)
         {
-            return await SendRequest<IEnumerable<VALRWallet>>(GetUrl(BalancesEndpoint, ApiVersion1), HttpMethod.Post, ct, null, true).ConfigureAwait(false);
+            var result = await SendRequest<IEnumerable<VALRWallet>>(GetUrl(BalancesEndpoint, ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<IEnumerable<VALRWallet>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<IEnumerable<VALRWallet>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
         }
 
         #endregion

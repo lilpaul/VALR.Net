@@ -34,9 +34,15 @@ namespace VALR.Net
 
             if (uri.Contains("v1"))
             {
+                var path = new Uri(uri).PathAndQuery;
                 var timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
-                var body = JsonConvert.SerializeObject(parameters);
-                var payload = $"{timestamp}{method.ToString().ToUpper()}{uri}{body}";
+                //body is optional in signature - consider removing if it causes issues when not empty
+                var body = "";
+                if (parameters.Count > 0)
+                {
+                    body = JsonConvert.SerializeObject(parameters);
+                }
+                var payload = $"{timestamp}{method.ToString().ToUpper()}{path}{body}";
                 var signedData = Sign(payload);
 
                 result.Add("X-VALR-API-KEY", Credentials.Key.GetString());
