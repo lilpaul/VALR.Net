@@ -38,6 +38,9 @@ namespace VALR.Net
         private const string WithdrawalHistoryEndpoint = "wallet/crypto/{}/withdraw/history?skip={}&limit={}";
         private const string BankAccountsEndpoint = "wallet/fiat/{}/accounts";
         private const string WithdrawFiatEndpoint = "wallet/fiat/{}/withdraw";
+        private const string OrderBookEndpoint = "marketdata/{}/orderbook";
+        private const string DetailedOrderBookEndpoint = "marketdata/{}/orderbook/full";
+        private const string MarketTradeHistoryEndpoint = "marketdata/{}/tradehistory?limit={}";
         #endregion
 
         #region constructor/destructor
@@ -383,7 +386,6 @@ namespace VALR.Net
         /// <returns></returns>
         public async Task<WebCallResult<IEnumerable<VALRDeposit>>> GetDepositHistoryAsync(string currencyCode, int skip = 0, int limit = 100, CancellationToken ct = default)
         {
-            //TODO: Test after the withdraw crypto method is working so you have a withdrawal id to use for testing
             var result = await SendRequest<IEnumerable<VALRDeposit>>(GetUrl(FillPathParameter(DepositHistoryEndpoint, currencyCode, skip.ToString(), limit.ToString()), ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
             if (!result)
                 return WebCallResult<IEnumerable<VALRDeposit>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
@@ -408,7 +410,6 @@ namespace VALR.Net
         /// <returns></returns>
         public async Task<WebCallResult<IEnumerable<VALRWithdrawal>>> GetWithdrawalHistoryAsync(string currencyCode, int skip = 0, int limit = 100, CancellationToken ct = default)
         {
-            //TODO: Test after the withdraw crypto method is working so you have a withdrawal id to use for testing
             var result = await SendRequest<IEnumerable<VALRWithdrawal>>(GetUrl(FillPathParameter(WithdrawalHistoryEndpoint, currencyCode, skip.ToString(), limit.ToString()), ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
             if (!result)
                 return WebCallResult<IEnumerable<VALRWithdrawal>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
@@ -429,7 +430,6 @@ namespace VALR.Net
         /// <returns></returns>
         public async Task<WebCallResult<IEnumerable<VALRBankAccount>>> GetBankAccountsAsync(string currencyCode, CancellationToken ct = default)
         {
-            //TODO: Test after the withdraw crypto method is working so you have a withdrawal id to use for testing
             var result = await SendRequest<IEnumerable<VALRBankAccount>>(GetUrl(FillPathParameter(BankAccountsEndpoint, currencyCode), ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
             if (!result)
                 return WebCallResult<IEnumerable<VALRBankAccount>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
@@ -475,6 +475,68 @@ namespace VALR.Net
             if (!result)
                 return WebCallResult<VALRWithdrawalResult>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
             return new WebCallResult<VALRWithdrawalResult>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
+
+        /// <summary>
+        /// Returns a list of the top 20 bids and asks in the order book. Ask orders are sorted by price ascending. Bid orders are sorted by price descending. Orders of the same price are aggregated.
+        /// </summary>
+        /// <param name="currencyPair">Currency pair for which you want to query the order book. Supported currency pairs: BTCZAR, ETHZAR, XRPZAR</param>
+        /// <returns></returns>
+        public WebCallResult<VALROrderBook> GetOrderBook(string currencyPair, CancellationToken ct = default) => GetOrderBookAsync(currencyPair, ct).Result;
+
+        /// <summary>
+        /// Returns a list of the top 20 bids and asks in the order book. Ask orders are sorted by price ascending. Bid orders are sorted by price descending. Orders of the same price are aggregated.
+        /// </summary>
+        /// <param name="currencyPair">Currency pair for which you want to query the order book. Supported currency pairs: BTCZAR, ETHZAR, XRPZAR</param>
+        /// <returns></returns>
+        public async Task<WebCallResult<VALROrderBook>> GetOrderBookAsync(string currencyCode, CancellationToken ct = default)
+        {
+            var result = await SendRequest<VALROrderBook>(GetUrl(FillPathParameter(OrderBookEndpoint, currencyCode), ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<VALROrderBook>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<VALROrderBook>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
+
+        /// <summary>
+        /// Returns a list of all the bids and asks in the order book. Ask orders are sorted by price ascending. Bid orders are sorted by price descending. Orders of the same price are NOT aggregated.
+        /// </summary>
+        /// <param name="currencyPair">Currency pair for which you want to query the order book. Supported currency pairs: BTCZAR, ETHZAR, XRPZAR</param>
+        /// <returns></returns>
+        public WebCallResult<VALRDetailedOrderBook> GetDetailedOrderBook(string currencyPair, CancellationToken ct = default) => GetDetailedOrderBookAsync(currencyPair, ct).Result;
+
+        /// <summary>
+        /// Returns a list of all the bids and asks in the order book. Ask orders are sorted by price ascending. Bid orders are sorted by price descending. Orders of the same price are NOT aggregated.
+        /// </summary>
+        /// <param name="currencyPair">Currency pair for which you want to query the order book. Supported currency pairs: BTCZAR, ETHZAR, XRPZAR</param>
+        /// <returns></returns>
+        public async Task<WebCallResult<VALRDetailedOrderBook>> GetDetailedOrderBookAsync(string currencyCode, CancellationToken ct = default)
+        {
+            var result = await SendRequest<VALRDetailedOrderBook>(GetUrl(FillPathParameter(DetailedOrderBookEndpoint, currencyCode), ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<VALRDetailedOrderBook>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<VALRDetailedOrderBook>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
+
+        /// <summary>
+        /// Get the last 100 recent trades for a given currency pair. You can limit the number of trades returned by specifying the limit parameter.
+        /// </summary>
+        /// <param name="currencyPair">Currency pair for which you want to query the trade history. Supported currency pairs: BTCZAR, ETHZAR, XRPZAR</param>
+        /// <param name="limit">Limit the number of items returned.</param>
+        /// <returns></returns>
+        public WebCallResult<IEnumerable<VALRMarketTrade>> GetMarketTradeHistory(string currencyPair, int limit = 100, CancellationToken ct = default) => GetMarketTradeHistoryAsync(currencyPair, limit, ct).Result;
+
+        /// <summary>
+        /// Get the last 100 recent trades for a given currency pair. You can limit the number of trades returned by specifying the limit parameter.
+        /// </summary>
+        /// <param name="currencyPair">Currency pair for which you want to query the trade history. Supported currency pairs: BTCZAR, ETHZAR, XRPZAR</param>
+        /// <param name="limit">Limit the number of items returned.</param>
+        /// <returns></returns>
+        public async Task<WebCallResult<IEnumerable<VALRMarketTrade>>> GetMarketTradeHistoryAsync(string currencyPair, int limit = 100, CancellationToken ct = default)
+        {
+            var result = await SendRequest<IEnumerable<VALRMarketTrade>>(GetUrl(FillPathParameter(MarketTradeHistoryEndpoint, currencyPair, limit.ToString()), ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<IEnumerable<VALRMarketTrade>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<IEnumerable<VALRMarketTrade>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
         }
         #endregion
         #endregion
