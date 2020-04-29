@@ -30,6 +30,14 @@ namespace VALR.Net
         private const string BalancesEndpoint = "account/balances";
         private const string TransactionHistoryEndpoint = "account/transactionhistory?skip={}&limit={}";
         private const string TradeHistoryEndpoint = "account/{}/tradehistory?limit={}";
+        private const string DepositAddressEndpoint = "wallet/crypto/{}/deposit/address";
+        private const string WithdrawalInfoEndpoint = "wallet/crypto/{}/withdraw";
+        private const string WithdrawCryptoEndpoint = "wallet/crypto/{}/withdraw";
+        private const string WithdrawalStatusEndpoint = "wallet/crypto/{}/withdraw/{}";
+        private const string DepositHistoryEndpoint = "wallet/crypto/{}/deposit/history?skip={}&limit={}";
+        private const string WithdrawalHistoryEndpoint = "wallet/crypto/{}/withdraw/history?skip={}&limit={}";
+        private const string BankAccountsEndpoint = "wallet/fiat/{}/accounts";
+        private const string WithdrawFiatEndpoint = "wallet/fiat/{}/withdraw";
         #endregion
 
         #region constructor/destructor
@@ -207,18 +215,18 @@ namespace VALR.Net
         /// <summary>
         /// Get transactions from account history
         /// </summary>
-        /// <param name="ct">Cancellation token</param>
         /// <param name="skip">Number of records to skip (pagination)</param><returns></returns>
         /// <param name="limit">Number of records to fetch (pagination)</param><returns></returns>
+        /// <param name="ct">Cancellation token</param>
         /// <returns></returns>
         public WebCallResult<IEnumerable<VALRTransaction>> GetTransactionHistory(int skip = 0, int limit = 100, CancellationToken ct = default) => GetTransactionHistoryAsync(skip, limit, ct).Result;
 
         /// <summary>
         /// Get transactions from account history
         /// </summary>
-        /// <param name="ct">Cancellation token</param>
         /// <param name="skip">Number of records to skip (pagination)</param><returns></returns>
         /// <param name="limit">Number of records to fetch (pagination)</param><returns></returns>
+        /// <param name="ct">Cancellation token</param>
         /// <returns></returns>
         public async Task<WebCallResult<IEnumerable<VALRTransaction>>> GetTransactionHistoryAsync(int skip = 0, int limit = 100, CancellationToken ct = default)
         {
@@ -231,18 +239,18 @@ namespace VALR.Net
         /// <summary>
         /// Get recent account trade history for a specific trading pair
         /// </summary>
-        /// <param name="ct">Cancellation token</param>
         /// <param name="pair">Trading pair eg. "BTCZAR"</param><returns></returns>
         /// <param name="limit">Number of records to fetch (100 max)</param><returns></returns>
+        /// <param name="ct">Cancellation token</param>
         /// <returns></returns>
         public WebCallResult<IEnumerable<VALRPairTrade>> GetTradeHistory(string pair, int limit = 100, CancellationToken ct = default) => GetTradeHistoryAsync(pair, limit, ct).Result;
 
         /// <summary>
         /// Get recent account trade history for a specific trading pair
         /// </summary>
-        /// <param name="ct">Cancellation token</param>
         /// <param name="pair">Trading pair eg. "BTCZAR"</param><returns></returns>
         /// <param name="limit">Number of records to fetch (100 max)</param><returns></returns>
+        /// <param name="ct">Cancellation token</param>
         /// <returns></returns>
         public async Task<WebCallResult<IEnumerable<VALRPairTrade>>> GetTradeHistoryAsync(string pair, int limit = 100, CancellationToken ct = default)
         {
@@ -250,6 +258,223 @@ namespace VALR.Net
             if (!result)
                 return WebCallResult<IEnumerable<VALRPairTrade>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
             return new WebCallResult<IEnumerable<VALRPairTrade>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
+
+        /// <summary>
+        /// Returns the default deposit address associated with currency specified
+        /// </summary>
+        /// <param name="currency">Crypto currency code eg. "ETH"</param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns></returns>
+        public WebCallResult<VALRDepositAddress> GetDepositAddress(string currency, CancellationToken ct = default) => GetDepositAddressAsync(currency, ct).Result;
+
+        /// <summary>
+        /// Returns the default deposit address associated with currency specified
+        /// </summary>
+        /// <param name="currency">Crypto currency code eg. "ETH"</param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns></returns>
+        public async Task<WebCallResult<VALRDepositAddress>> GetDepositAddressAsync(string currency, CancellationToken ct = default)
+        {
+            var result = await SendRequest<VALRDepositAddress>(GetUrl(FillPathParameter(DepositAddressEndpoint, currency), ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<VALRDepositAddress>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<VALRDepositAddress>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
+
+        /// <summary>
+        /// Get all the information about withdrawing a given currency from your VALR account. 
+        /// That will include withdrawal costs, minimum withdrawal amount etc.
+        /// </summary>
+        /// <param name="currency">Currency code eg. "ETH"</param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns></returns>
+        public WebCallResult<VALRWithdrawalInfo> GetWithdrawalInfo(string currency, CancellationToken ct = default) => GetCryptoDepositAddressAsync(currency, ct).Result;
+
+        /// <summary>
+        /// Get all the information about withdrawing a given currency from your VALR account. 
+        /// That will include withdrawal costs, minimum withdrawal amount etc.
+        /// </summary>
+        /// <param name="currency">Currency code eg. "ETH"</param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns></returns>
+        public async Task<WebCallResult<VALRWithdrawalInfo>> GetCryptoDepositAddressAsync(string currency, CancellationToken ct = default)
+        {
+            var result = await SendRequest<VALRWithdrawalInfo>(GetUrl(FillPathParameter(WithdrawalInfoEndpoint, currency), ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<VALRWithdrawalInfo>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<VALRWithdrawalInfo>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
+
+        /// <summary>
+        /// Withdraw cryptocurrency funds to an address
+        /// </summary>
+        /// <param name="currencyCode">The currency to withdraw funds </param>
+        /// <param name="amount">The amount to of funds to withdraw</param>
+        /// <param name="address">The address to send the funds to</param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns>The average price at which the execution would happen</returns>
+        public WebCallResult<VALRWithdrawalResult> WithdrawCrypto(string currencyCode, decimal amount, string address, CancellationToken ct = default)
+            => WithdrawCryptoAsync(currencyCode, amount, address, ct).Result;
+
+        /// <summary>
+        /// Withdraw cryptocurrency funds to an address
+        /// </summary>
+        /// <param name="currencyCode">The currency to withdraw funds </param>
+        /// <param name="amount">The amount to of funds to withdraw</param>
+        /// <param name="address">The address to send the funds to</param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns>The average price at which the execution would happen</returns>
+        public async Task<WebCallResult<VALRWithdrawalResult>> WithdrawCryptoAsync(string currencyCode, decimal amount, string address, CancellationToken ct = default)
+        {
+            var parameters = new Dictionary<string, object>
+            {
+                { "amount", amount },
+                { "address", address }
+            };
+
+            //TODO: Keeps complaining about invalid signature even though authenticator signing test passes???
+            var result = await SendRequest<VALRWithdrawalResult>(GetUrl(FillPathParameter(WithdrawCryptoEndpoint, currencyCode), ApiVersion1), HttpMethod.Post, ct, parameters, true).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<VALRWithdrawalResult>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<VALRWithdrawalResult>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
+
+        /// <summary>
+        /// Check the status of a withdrawal.
+        /// </summary>
+        /// <param name="currencyCode">This is the currency code for the currency you have withdrawn. Examples: BTC, ETH, XRP, ADA, etc.</param><returns></returns>
+        /// <param name="withdrawId">The unique id that represents your withdrawal request. This is provided as a response to the API call to withdraw.</param><returns></returns>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns></returns>
+        public WebCallResult<VALRWithdrawalStatus> GetWithdrawalStatus(string currencyCode, string withdrawId, CancellationToken ct = default) => GetWithdrawalStatusAsync(currencyCode, withdrawId, ct).Result;
+
+        /// <summary>
+        /// Check the status of a withdrawal.
+        /// </summary>
+        /// <param name="currencyCode">This is the currency code for the currency you have withdrawn. Examples: BTC, ETH, XRP, ADA, etc.</param><returns></returns>
+        /// <param name="withdrawId">The unique id that represents your withdrawal request. This is provided as a response to the API call to withdraw.</param><returns></returns>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns></returns>
+        public async Task<WebCallResult<VALRWithdrawalStatus>> GetWithdrawalStatusAsync(string currencyCode, string withdrawId, CancellationToken ct = default)
+        {
+            //TODO: Test after the withdraw crypto method is working so you have a withdrawal id to use for testing
+            var result = await SendRequest<VALRWithdrawalStatus>(GetUrl(FillPathParameter(TradeHistoryEndpoint, currencyCode, withdrawId), ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<VALRWithdrawalStatus>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<VALRWithdrawalStatus>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
+
+        /// <summary>
+        /// Get the Deposit History records for a given currency.
+        /// </summary>
+        /// <param name="currencyCode">Currently, the allowed values here are BTC, ETH, XRP</param>
+        /// <param name="skip">Skip number of items from the list.</param>
+        /// <param name="limit">Limit the number of items returned.</param>
+        /// <returns></returns>
+        public WebCallResult<IEnumerable<VALRDeposit>> GetDepositHistory(string currencyCode, int skip = 0, int limit = 100, CancellationToken ct = default) => GetDepositHistoryAsync(currencyCode, skip, limit, ct).Result;
+
+        /// <summary>
+        /// Get the Deposit History records for a given currency.
+        /// </summary>
+        /// <param name="currencyCode">Currently, the allowed values here are BTC, ETH, XRP</param>
+        /// <param name="skip">Skip number of items from the list.</param>
+        /// <param name="limit">Limit the number of items returned.</param>
+        /// <returns></returns>
+        public async Task<WebCallResult<IEnumerable<VALRDeposit>>> GetDepositHistoryAsync(string currencyCode, int skip = 0, int limit = 100, CancellationToken ct = default)
+        {
+            //TODO: Test after the withdraw crypto method is working so you have a withdrawal id to use for testing
+            var result = await SendRequest<IEnumerable<VALRDeposit>>(GetUrl(FillPathParameter(DepositHistoryEndpoint, currencyCode, skip.ToString(), limit.ToString()), ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<IEnumerable<VALRDeposit>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<IEnumerable<VALRDeposit>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
+
+        /// <summary>
+        /// Get the Withdrawal History records for a given currency.
+        /// </summary>
+        /// <param name="currencyCode">Currently, the allowed values here are BTC, ETH, XRP</param>
+        /// <param name="skip">Skip number of items from the list.</param>
+        /// <param name="limit">Limit the number of items returned.</param>
+        /// <returns></returns>
+        public WebCallResult<IEnumerable<VALRWithdrawal>> GetWithdrawalHistory(string currencyCode, int skip = 0, int limit = 100, CancellationToken ct = default) => GetWithdrawalHistoryAsync(currencyCode, skip, limit, ct).Result;
+
+        /// <summary>
+        /// Get the Withdrawal History records for a given currency.
+        /// </summary>
+        /// <param name="currencyCode">Currently, the allowed values here are BTC, ETH, XRP</param>
+        /// <param name="skip">Skip number of items from the list.</param>
+        /// <param name="limit">Limit the number of items returned.</param>
+        /// <returns></returns>
+        public async Task<WebCallResult<IEnumerable<VALRWithdrawal>>> GetWithdrawalHistoryAsync(string currencyCode, int skip = 0, int limit = 100, CancellationToken ct = default)
+        {
+            //TODO: Test after the withdraw crypto method is working so you have a withdrawal id to use for testing
+            var result = await SendRequest<IEnumerable<VALRWithdrawal>>(GetUrl(FillPathParameter(WithdrawalHistoryEndpoint, currencyCode, skip.ToString(), limit.ToString()), ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<IEnumerable<VALRWithdrawal>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<IEnumerable<VALRWithdrawal>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
+
+        /// <summary>
+        /// Get a list of bank accounts that are linked to your VALR account. Bank accounts can be linked by signing in to your account on www.VALR.com.
+        /// </summary>
+        /// <param name="currencyCode">The currency code for the fiat currency. Supported: ZAR.</param>
+        /// <returns></returns>
+        public WebCallResult<IEnumerable<VALRBankAccount>> GetBankAccounts(string currencyCode, CancellationToken ct = default) => GetBankAccountsAsync(currencyCode, ct).Result;
+
+        /// <summary>
+        /// Get a list of bank accounts that are linked to your VALR account. Bank accounts can be linked by signing in to your account on www.VALR.com.
+        /// </summary>
+        /// <param name="currencyCode">The currency code for the fiat currency. Supported: ZAR.</param>
+        /// <returns></returns>
+        public async Task<WebCallResult<IEnumerable<VALRBankAccount>>> GetBankAccountsAsync(string currencyCode, CancellationToken ct = default)
+        {
+            //TODO: Test after the withdraw crypto method is working so you have a withdrawal id to use for testing
+            var result = await SendRequest<IEnumerable<VALRBankAccount>>(GetUrl(FillPathParameter(BankAccountsEndpoint, currencyCode), ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<IEnumerable<VALRBankAccount>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<IEnumerable<VALRBankAccount>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
+
+        /// <summary>
+        /// Withdraw your ZAR funds into one of your linked bank accounts.
+        /// The request body accepts an optional field called "fast". If the value of this field is "true" the withdrawal will be processed with real-time clearing during our next withdrawal run.
+        /// Please note that higher fees apply to fast withdrawals and some banks do not participate.
+        /// </summary>
+        /// <param name="currencyCode">The currency code for the fiat currency. Supported: ZAR.</param>
+        /// <param name="linkedBankAccountId">The amount to of funds to withdraw</param>
+        /// <param name="amount">The address to send the funds to</param>
+        /// <param name="fast">The address to send the funds to</param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns></returns>
+        public WebCallResult<VALRWithdrawalResult> WithdrawFiat(string currencyCode, string linkedBankAccountId, decimal amount, bool fast, CancellationToken ct = default)
+            => WithdrawFiatAsync(currencyCode, linkedBankAccountId, amount, fast, ct).Result;
+
+        /// <summary>
+        /// Withdraw your ZAR funds into one of your linked bank accounts.
+        /// The request body accepts an optional field called "fast". If the value of this field is "true" the withdrawal will be processed with real-time clearing during our next withdrawal run.
+        /// Please note that higher fees apply to fast withdrawals and some banks do not participate.
+        /// </summary>
+        /// <param name="currencyCode">The currency code for the fiat currency. Supported: ZAR.</param>
+        /// <param name="linkedBankAccountId">The amount to of funds to withdraw</param>
+        /// <param name="amount">The address to send the funds to</param>
+        /// <param name="fast">The address to send the funds to</param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns></returns>
+        public async Task<WebCallResult<VALRWithdrawalResult>> WithdrawFiatAsync(string currencyCode, string linkedBankAccountId, decimal amount, bool fast, CancellationToken ct = default)
+        {
+            var parameters = new Dictionary<string, object>
+            {
+                { "linkedBankAccountId", linkedBankAccountId },
+                { "amount", amount },
+                { "fast", fast }
+            };
+
+            //TODO: Keeps complaining about invalid signature even though authenticator signing test passes???
+            var result = await SendRequest<VALRWithdrawalResult>(GetUrl(FillPathParameter(WithdrawFiatEndpoint, currencyCode), ApiVersion1), HttpMethod.Post, ct, parameters, true).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<VALRWithdrawalResult>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<VALRWithdrawalResult>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
         }
         #endregion
         #endregion

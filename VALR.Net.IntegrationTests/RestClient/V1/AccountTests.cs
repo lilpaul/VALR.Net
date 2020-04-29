@@ -1,6 +1,4 @@
 ﻿using NUnit.Framework;
-using VALR.Net.Objects;
-using CryptoExchange.Net.Authentication;
 using Microsoft.Extensions.Configuration;
 
 namespace VALR.Net.IntegrationTests.RestClient.V1
@@ -8,7 +6,6 @@ namespace VALR.Net.IntegrationTests.RestClient.V1
     public class AccountTests
     {
         private VALRClient client;
-        private VALRClientOptions options;
 
         [SetUp]
         public void Setup()

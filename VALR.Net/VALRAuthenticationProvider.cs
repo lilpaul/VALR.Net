@@ -24,6 +24,10 @@ namespace VALR.Net
         }
 
         public override Dictionary<string, string> AddAuthenticationToHeaders(string uri, HttpMethod method, Dictionary<string, object> parameters, bool signed)
+            => AddAuthenticationToHeaders(uri, method, parameters, signed, "");
+
+
+        public Dictionary<string, string> AddAuthenticationToHeaders(string uri, HttpMethod method, Dictionary<string, object> parameters, bool signed, string presetTimestamp = "")
         {
             if (Credentials.Key == null)
                 throw new ArgumentException("ApiKey/Secret needed");
@@ -36,6 +40,10 @@ namespace VALR.Net
             {
                 var path = new Uri(uri).PathAndQuery;
                 var timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
+                if (!string.IsNullOrEmpty(presetTimestamp))
+                {
+                    timestamp = presetTimestamp;
+                }
                 //body is optional in signature - consider removing if it causes issues when not empty
                 var body = "";
                 if (parameters.Count > 0)
