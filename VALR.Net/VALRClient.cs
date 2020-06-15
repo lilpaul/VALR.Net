@@ -43,6 +43,7 @@ namespace VALR.Net
         private const string MarketTradeHistoryEndpoint = "marketdata/{}/tradehistory?limit={}";
         private const string SimpleBuySellQuoteEndpoint = "simple/{}/quote";
         private const string SimpleBuySellOrderEndpoint = "simple/{}/order";
+        private const string SimpleBuySellOrderStatusEndpoint = "simple/{}/order/{}";
         #endregion
 
         #region constructor/destructor
@@ -617,6 +618,28 @@ namespace VALR.Net
             if (!result)
                 return WebCallResult<VALRCodeMessageResult>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
             return new WebCallResult<VALRCodeMessageResult>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
+
+        /// <summary>
+        /// Get the status of a Simple Buy/Sell order.
+        /// </summary>
+        /// <param name="currencyPair">The currency pair to trade in</param>
+        /// <param name="orderId">The Id of the order to check status for</param>
+        /// <returns></returns>
+        public WebCallResult<IEnumerable<VALRSimpleBuySellOrderStatus>> SimpleBuySellOrderStatus(string currencyPair, string orderId, CancellationToken ct = default) => SimpleBuySellOrderStatusAsync(currencyPair, orderId, ct).Result;
+
+        /// <summary>
+        /// Get the status of a Simple Buy/Sell order.
+        /// </summary>
+        /// <param name="currencyPair">The currency pair to trade in</param>
+        /// <param name="orderId">The Id of the order to check status for</param>
+        /// <returns></returns>
+        public async Task<WebCallResult<IEnumerable<VALRSimpleBuySellOrderStatus>>> SimpleBuySellOrderStatusAsync(string currencyPair, string orderId, CancellationToken ct = default)
+        {
+            var result = await SendRequest<IEnumerable<VALRSimpleBuySellOrderStatus>>(GetUrl(FillPathParameter(SimpleBuySellOrderStatusEndpoint, currencyPair, orderId), ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<IEnumerable<VALRSimpleBuySellOrderStatus>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<IEnumerable<VALRSimpleBuySellOrderStatus>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
         }
         #endregion
         #endregion
