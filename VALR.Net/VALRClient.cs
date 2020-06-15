@@ -41,6 +41,7 @@ namespace VALR.Net
         private const string OrderBookEndpoint = "marketdata/{}/orderbook";
         private const string DetailedOrderBookEndpoint = "marketdata/{}/orderbook/full";
         private const string MarketTradeHistoryEndpoint = "marketdata/{}/tradehistory?limit={}";
+        private const string SimpleBuySellQuoteEndpoint = "simple/{}/quote";
         #endregion
 
         #region constructor/destructor
@@ -537,6 +538,47 @@ namespace VALR.Net
             if (!result)
                 return WebCallResult<IEnumerable<VALRMarketTrade>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
             return new WebCallResult<IEnumerable<VALRMarketTrade>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
+
+        /// <summary>
+        /// Make use of our powerful Simple Buy/Sell API to instantly buy and sell currencies. 
+        /// If you want to sell BTC for ZAR, payInCurrency will be BTC and the side would be SELL
+        /// If you want to buy BTC with ZAR, payInCurrency will be ZAR and the side would be BUY
+        /// </summary>
+        /// <param name="currencyPair">The currency pair to trade in</param>
+        /// <param name="payInCurrency">The currency code you are paying in.</param>
+        /// <param name="payAmount">The amount of crypto to buy/sell</param>
+        /// <param name="side">Whether you are buying or selling</param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns></returns>
+        public WebCallResult<VALRSimpleBuySellQuoteResult> SimpleBuySellQuote(string currencyPair, string payInCurrency, decimal payAmount, TradeSide side, CancellationToken ct = default)
+            => SimpleBuySellQuoteAsync(currencyPair, payInCurrency, payAmount, side, ct).Result;
+
+        /// <summary>
+        /// Make use of our powerful Simple Buy/Sell API to instantly buy and sell currencies. 
+        /// If you want to sell BTC for ZAR, payInCurrency will be BTC and the side would be SELL
+        /// If you want to buy BTC with ZAR, payInCurrency will be ZAR and the side would be BUY
+        /// </summary>
+        /// <param name="currencyPair">The currency pair to trade in</param>
+        /// <param name="payInCurrency">The currency code you are paying in.</param>
+        /// <param name="payAmount">The amount of crypto to buy/sell</param>
+        /// <param name="side">Whether you are buying or selling</param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns></returns>
+        public async Task<WebCallResult<VALRSimpleBuySellQuoteResult>> SimpleBuySellQuoteAsync(string currencyPair, string payInCurrency, decimal payAmount, TradeSide side, CancellationToken ct = default)
+        {
+            var parameters = new Dictionary<string, object>
+            {
+                { "payInCurrency", payInCurrency },
+                { "payAmount", payAmount },
+                { "side", side.ToString() }
+            };
+
+            //TODO: Keeps complaining about invalid signature even though authenticator signing test passes???
+            var result = await SendRequest<VALRSimpleBuySellQuoteResult>(GetUrl(FillPathParameter(SimpleBuySellQuoteEndpoint, currencyPair), ApiVersion1), HttpMethod.Post, ct, parameters, true).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<VALRSimpleBuySellQuoteResult>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<VALRSimpleBuySellQuoteResult>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
         }
         #endregion
         #endregion
