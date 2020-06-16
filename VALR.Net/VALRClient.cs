@@ -46,6 +46,8 @@ namespace VALR.Net
         private const string SimpleBuySellOrderStatusEndpoint = "simple/{}/order/{}";
         private const string LimitOrderEndpoint = "orders/limit";
         private const string MarketOrderEndpoint = "orders/market";
+        private const string OrderStatusByOrderIdEndpoint = "orders/{}/orderid/{}";
+        private const string OrderStatusByCustomerOrderIdEndpoint = "orders/{}/customerorderid/{}";
         #endregion
 
         #region constructor/destructor
@@ -724,6 +726,50 @@ namespace VALR.Net
             if (!result)
                 return WebCallResult<VALRIdResult>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
             return new WebCallResult<VALRIdResult>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
+
+        /// <summary>
+        /// Get the status of a Simple Buy/Sell order.
+        /// </summary>
+        /// <param name="currencyPair">The currency pair to trade in</param>
+        /// <param name="orderId">The Id of the order to check status for</param>
+        /// <returns></returns>
+        public WebCallResult<IEnumerable<VALROrderStatusResult>> OrderStatusByOrderId(string currencyPair, string orderId, CancellationToken ct = default) => OrderStatusByOrderIdAsync(currencyPair, orderId, ct).Result;
+
+        /// <summary>
+        /// Get the status of a Simple Buy/Sell order.
+        /// </summary>
+        /// <param name="currencyPair">The currency pair to trade in</param>
+        /// <param name="orderId">The Id of the order to check status for</param>
+        /// <returns></returns>
+        public async Task<WebCallResult<IEnumerable<VALROrderStatusResult>>> OrderStatusByOrderIdAsync(string currencyPair, string orderId, CancellationToken ct = default)
+        {
+            var result = await SendRequest<IEnumerable<VALROrderStatusResult>>(GetUrl(FillPathParameter(OrderStatusByOrderIdEndpoint, currencyPair, orderId), ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<IEnumerable<VALROrderStatusResult>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<IEnumerable<VALROrderStatusResult>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
+
+        /// <summary>
+        /// Get the status of a Simple Buy/Sell order.
+        /// </summary>
+        /// <param name="currencyPair">The currency pair to trade in</param>
+        /// <param name="customerOrderId">The customer order Id of the order to check status for</param>
+        /// <returns></returns>
+        public WebCallResult<IEnumerable<VALROrderStatusResult>> OrderStatusByCustomerOrderId(string currencyPair, string customerOrderId, CancellationToken ct = default) => OrderStatusByCustomerOrderIdAsync(currencyPair, customerOrderId, ct).Result;
+
+        /// <summary>
+        /// Get the status of a Simple Buy/Sell order.
+        /// </summary>
+        /// <param name="currencyPair">The currency pair to trade in</param>
+        /// <param name="customerOrderId">The customer order Id of the order to check status for</param>
+        /// <returns></returns>
+        public async Task<WebCallResult<IEnumerable<VALROrderStatusResult>>> OrderStatusByCustomerOrderIdAsync(string currencyPair, string customerOrderId, CancellationToken ct = default)
+        {
+            var result = await SendRequest<IEnumerable<VALROrderStatusResult>>(GetUrl(FillPathParameter(OrderStatusByCustomerOrderIdEndpoint, currencyPair, customerOrderId), ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<IEnumerable<VALROrderStatusResult>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<IEnumerable<VALROrderStatusResult>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
         }
         #endregion
         #endregion
