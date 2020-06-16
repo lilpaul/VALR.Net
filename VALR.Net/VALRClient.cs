@@ -52,6 +52,8 @@ namespace VALR.Net
         private const string OrderHistoryEndpoint = "orders/history?skip={}&limit={}";
         private const string OrderHistorySummaryByOrderIdEndpoint = "orders/history/summary/orderid/{}";
         private const string OrderHistorySummaryByCustomerOrderIdEndpoint = "orders/history/summary/customerorderid/{}";
+        private const string OrderHistoryDetailByOrderIdEndpoint = "orders/history/detail/orderid/{}";
+        private const string OrderHistoryDetailByCustomerOrderIdEndpoint = "orders/history/detail/customerorderid/{}";
         #endregion
 
         #region constructor/destructor
@@ -854,7 +856,7 @@ namespace VALR.Net
         /// An order is considered completed when the "Order Status" call returns one of the following statuses: 
         /// "Filled", "Cancelled" or "Failed". When this happens, you can get a more detailed summary about this 
         /// order using this call. Orders that are not completed are invalid for this request.
-        /// <param name="customerOrderId">Order Id provided by VALR eg. "8ca691c4-9be8-4427-ae5e-905cdfc18491"</param>
+        /// <param name="customerOrderId">Order Id provided by user</param>
         /// <param name="ct">Cancellation token</param>
         /// </summary>
         /// <returns></returns>
@@ -864,7 +866,7 @@ namespace VALR.Net
         /// An order is considered completed when the "Order Status" call returns one of the following statuses: 
         /// "Filled", "Cancelled" or "Failed". When this happens, you can get a more detailed summary about this 
         /// order using this call. Orders that are not completed are invalid for this request.
-        /// <param name="orderId">Order Id provided by VALR eg. "8ca691c4-9be8-4427-ae5e-905cdfc18491"</param>
+        /// <param name="orderId">Order Id provided by user</param>
         /// <param name="ct">Cancellation token</param>
         /// </summary>
         /// <returns></returns>
@@ -874,6 +876,55 @@ namespace VALR.Net
             if (!result)
                 return WebCallResult<VALRHistoricalOrderSummary>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
             return new WebCallResult<VALRHistoricalOrderSummary>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
+
+        /// <summary>
+        /// Get a detailed history of an order's statuses. This call returns an array of "Order Status" objects. 
+        /// The latest and most up-to-date status of this order is the zeroth element in the array.
+        /// <param name="orderId">Order Id provided by VALR eg. "8ca691c4-9be8-4427-ae5e-905cdfc18491"</param>
+        /// <param name="ct">Cancellation token</param>
+        /// </summary>
+        /// <returns></returns>
+        public WebCallResult<IEnumerable<VALRHistoricalOrderDetail>> OrderHistoryDetailByOrderId(string orderId, CancellationToken ct = default) => OrderHistoryDetailByOrderIdAsync(orderId, ct).Result;
+
+        /// <summary>
+        /// An order is considered completed when the "Order Status" call returns one of the following statuses: 
+        /// "Filled", "Cancelled" or "Failed". When this happens, you can get a more detailed summary about this 
+        /// order using this call. Orders that are not completed are invalid for this request.
+        /// <param name="orderId">Order Id provided by VALR eg. "8ca691c4-9be8-4427-ae5e-905cdfc18491"</param>
+        /// <param name="ct">Cancellation token</param>
+        /// </summary>
+        /// <returns></returns>
+        public async Task<WebCallResult<IEnumerable<VALRHistoricalOrderDetail>>> OrderHistoryDetailByOrderIdAsync(string orderId, CancellationToken ct = default)
+        {
+            var result = await SendRequest<IEnumerable<VALRHistoricalOrderDetail>>(GetUrl(FillPathParameter(OrderHistoryDetailByOrderIdEndpoint, orderId), ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<IEnumerable<VALRHistoricalOrderDetail>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<IEnumerable<VALRHistoricalOrderDetail>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
+
+        /// <summary>
+        /// Get a detailed history of an order's statuses. This call returns an array of "Order Status" objects. 
+        /// The latest and most up-to-date status of this order is the zeroth element in the array.
+        /// <param name="customerOrderId">Order Id provided by user</param>
+        /// <param name="ct">Cancellation token</param>
+        /// </summary>
+        /// <returns></returns>
+        public WebCallResult<IEnumerable<VALRHistoricalOrderDetail>> OrderHistoryDetailByCustomerOrderId(string customerOrderId, CancellationToken ct = default) => OrderHistoryDetailByCustomerOrderIdAsync(customerOrderId, ct).Result;
+
+        /// <summary>
+        /// Get a detailed history of an order's statuses. This call returns an array of "Order Status" objects. 
+        /// The latest and most up-to-date status of this order is the zeroth element in the array.
+        /// <param name="customerOrderId">Order Id provided by user</param>
+        /// <param name="ct">Cancellation token</param>
+        /// </summary>
+        /// <returns></returns>
+        public async Task<WebCallResult<IEnumerable<VALRHistoricalOrderDetail>>> OrderHistoryDetailByCustomerOrderIdAsync(string customerOrderId, CancellationToken ct = default)
+        {
+            var result = await SendRequest<IEnumerable<VALRHistoricalOrderDetail>>(GetUrl(FillPathParameter(OrderHistoryDetailByCustomerOrderIdEndpoint, customerOrderId), ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<IEnumerable<VALRHistoricalOrderDetail>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<IEnumerable<VALRHistoricalOrderDetail>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
         }
         #endregion
         #endregion
