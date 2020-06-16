@@ -48,6 +48,7 @@ namespace VALR.Net
         private const string MarketOrderEndpoint = "orders/market";
         private const string OrderStatusByOrderIdEndpoint = "orders/{}/orderid/{}";
         private const string OrderStatusByCustomerOrderIdEndpoint = "orders/{}/customerorderid/{}";
+        private const string AllOpenOrdersEndpoint = "orders/open";
         #endregion
 
         #region constructor/destructor
@@ -630,7 +631,7 @@ namespace VALR.Net
         /// <param name="currencyPair">The currency pair to trade in</param>
         /// <param name="orderId">The Id of the order to check status for</param>
         /// <returns></returns>
-        public WebCallResult<IEnumerable<VALRSimpleBuySellOrderStatus>> SimpleBuySellOrderStatus(string currencyPair, string orderId, CancellationToken ct = default) => SimpleBuySellOrderStatusAsync(currencyPair, orderId, ct).Result;
+        public WebCallResult<VALRSimpleBuySellOrderStatus> SimpleBuySellOrderStatus(string currencyPair, string orderId, CancellationToken ct = default) => SimpleBuySellOrderStatusAsync(currencyPair, orderId, ct).Result;
 
         /// <summary>
         /// Get the status of a Simple Buy/Sell order.
@@ -638,12 +639,12 @@ namespace VALR.Net
         /// <param name="currencyPair">The currency pair to trade in</param>
         /// <param name="orderId">The Id of the order to check status for</param>
         /// <returns></returns>
-        public async Task<WebCallResult<IEnumerable<VALRSimpleBuySellOrderStatus>>> SimpleBuySellOrderStatusAsync(string currencyPair, string orderId, CancellationToken ct = default)
+        public async Task<WebCallResult<VALRSimpleBuySellOrderStatus>> SimpleBuySellOrderStatusAsync(string currencyPair, string orderId, CancellationToken ct = default)
         {
-            var result = await SendRequest<IEnumerable<VALRSimpleBuySellOrderStatus>>(GetUrl(FillPathParameter(SimpleBuySellOrderStatusEndpoint, currencyPair, orderId), ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
+            var result = await SendRequest<VALRSimpleBuySellOrderStatus>(GetUrl(FillPathParameter(SimpleBuySellOrderStatusEndpoint, currencyPair, orderId), ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
             if (!result)
-                return WebCallResult<IEnumerable<VALRSimpleBuySellOrderStatus>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
-            return new WebCallResult<IEnumerable<VALRSimpleBuySellOrderStatus>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+                return WebCallResult<VALRSimpleBuySellOrderStatus>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<VALRSimpleBuySellOrderStatus>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
         }
 
         /// <summary>
@@ -734,7 +735,7 @@ namespace VALR.Net
         /// <param name="currencyPair">The currency pair to trade in</param>
         /// <param name="orderId">The Id of the order to check status for</param>
         /// <returns></returns>
-        public WebCallResult<IEnumerable<VALROrderStatusResult>> OrderStatusByOrderId(string currencyPair, string orderId, CancellationToken ct = default) => OrderStatusByOrderIdAsync(currencyPair, orderId, ct).Result;
+        public WebCallResult<VALROrderStatusResult> OrderStatusByOrderId(string currencyPair, string orderId, CancellationToken ct = default) => OrderStatusByOrderIdAsync(currencyPair, orderId, ct).Result;
 
         /// <summary>
         /// Get the status of a Simple Buy/Sell order.
@@ -742,12 +743,12 @@ namespace VALR.Net
         /// <param name="currencyPair">The currency pair to trade in</param>
         /// <param name="orderId">The Id of the order to check status for</param>
         /// <returns></returns>
-        public async Task<WebCallResult<IEnumerable<VALROrderStatusResult>>> OrderStatusByOrderIdAsync(string currencyPair, string orderId, CancellationToken ct = default)
+        public async Task<WebCallResult<VALROrderStatusResult>> OrderStatusByOrderIdAsync(string currencyPair, string orderId, CancellationToken ct = default)
         {
-            var result = await SendRequest<IEnumerable<VALROrderStatusResult>>(GetUrl(FillPathParameter(OrderStatusByOrderIdEndpoint, currencyPair, orderId), ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
+            var result = await SendRequest<VALROrderStatusResult>(GetUrl(FillPathParameter(OrderStatusByOrderIdEndpoint, currencyPair, orderId), ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
             if (!result)
-                return WebCallResult<IEnumerable<VALROrderStatusResult>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
-            return new WebCallResult<IEnumerable<VALROrderStatusResult>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+                return WebCallResult<VALROrderStatusResult>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<VALROrderStatusResult>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
         }
 
         /// <summary>
@@ -756,7 +757,7 @@ namespace VALR.Net
         /// <param name="currencyPair">The currency pair to trade in</param>
         /// <param name="customerOrderId">The customer order Id of the order to check status for</param>
         /// <returns></returns>
-        public WebCallResult<IEnumerable<VALROrderStatusResult>> OrderStatusByCustomerOrderId(string currencyPair, string customerOrderId, CancellationToken ct = default) => OrderStatusByCustomerOrderIdAsync(currencyPair, customerOrderId, ct).Result;
+        public WebCallResult<VALROrderStatusResult> OrderStatusByCustomerOrderId(string currencyPair, string customerOrderId, CancellationToken ct = default) => OrderStatusByCustomerOrderIdAsync(currencyPair, customerOrderId, ct).Result;
 
         /// <summary>
         /// Get the status of a Simple Buy/Sell order.
@@ -764,12 +765,30 @@ namespace VALR.Net
         /// <param name="currencyPair">The currency pair to trade in</param>
         /// <param name="customerOrderId">The customer order Id of the order to check status for</param>
         /// <returns></returns>
-        public async Task<WebCallResult<IEnumerable<VALROrderStatusResult>>> OrderStatusByCustomerOrderIdAsync(string currencyPair, string customerOrderId, CancellationToken ct = default)
+        public async Task<WebCallResult<VALROrderStatusResult>> OrderStatusByCustomerOrderIdAsync(string currencyPair, string customerOrderId, CancellationToken ct = default)
         {
-            var result = await SendRequest<IEnumerable<VALROrderStatusResult>>(GetUrl(FillPathParameter(OrderStatusByCustomerOrderIdEndpoint, currencyPair, customerOrderId), ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
+            var result = await SendRequest<VALROrderStatusResult>(GetUrl(FillPathParameter(OrderStatusByCustomerOrderIdEndpoint, currencyPair, customerOrderId), ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
             if (!result)
-                return WebCallResult<IEnumerable<VALROrderStatusResult>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
-            return new WebCallResult<IEnumerable<VALROrderStatusResult>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+                return WebCallResult<VALROrderStatusResult>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<VALROrderStatusResult>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
+
+        /// <summary>
+        /// Get all open orders for your account.
+        /// </summary>
+        /// <returns></returns>
+        public WebCallResult<IEnumerable<VALROpenOrder>> AllOpenOrders(CancellationToken ct = default) => AllOpenOrdersAsync(ct).Result;
+
+        /// <summary>
+        /// Get all open orders for your account.
+        /// </summary>
+        /// <returns></returns>
+        public async Task<WebCallResult<IEnumerable<VALROpenOrder>>> AllOpenOrdersAsync(CancellationToken ct = default)
+        {
+            var result = await SendRequest<IEnumerable<VALROpenOrder>>(GetUrl(AllOpenOrdersEndpoint, ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<IEnumerable<VALROpenOrder>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<IEnumerable<VALROpenOrder>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
         }
         #endregion
         #endregion
