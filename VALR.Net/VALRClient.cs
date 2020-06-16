@@ -44,6 +44,7 @@ namespace VALR.Net
         private const string SimpleBuySellQuoteEndpoint = "simple/{}/quote";
         private const string SimpleBuySellOrderEndpoint = "simple/{}/order";
         private const string SimpleBuySellOrderStatusEndpoint = "simple/{}/order/{}";
+        private const string LimitOrderEndpoint = "orders/limit";
         #endregion
 
         #region constructor/destructor
@@ -640,6 +641,50 @@ namespace VALR.Net
             if (!result)
                 return WebCallResult<IEnumerable<VALRSimpleBuySellOrderStatus>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
             return new WebCallResult<IEnumerable<VALRSimpleBuySellOrderStatus>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
+
+        /// <summary>
+        /// Create a new limit order. 
+        /// </summary>
+        /// <param name="side"></param>
+        /// <param name="quantity"></param>
+        /// <param name="price"></param>
+        /// <param name="pair"></param>
+        /// <param name="postOnly"></param>
+        /// <param name="customerOrderId"></param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns></returns>
+        public WebCallResult<VALRIdResult> LimitOrder(TradeSide side, decimal quantity, decimal price, string pair, bool postOnly, string customerOrderId, CancellationToken ct = default)
+            => LimitOrderAsync(side, quantity, price, pair, postOnly, customerOrderId, ct).Result;
+
+        /// <summary>
+        /// Create a new limit order. 
+        /// </summary>
+        /// <param name="side"></param>
+        /// <param name="quantity"></param>
+        /// <param name="price"></param>
+        /// <param name="pair"></param>
+        /// <param name="postOnly"></param>
+        /// <param name="customerOrderId"></param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns></returns>
+        public async Task<WebCallResult<VALRIdResult>> LimitOrderAsync(TradeSide side, decimal quantity, decimal price, string pair, bool postOnly, string customerOrderId, CancellationToken ct = default)
+        {
+            var parameters = new Dictionary<string, object>
+            {
+                { "side", side.ToString() },
+                { "quantity", quantity },
+                { "price", price },
+                { "pair", pair },
+                { "postOnly", postOnly },
+                { "customerOrderId", customerOrderId }
+            };
+
+            //TODO: Keeps complaining about invalid signature even though authenticator signing test passes???
+            var result = await SendRequest<VALRIdResult>(GetUrl(LimitOrderEndpoint, ApiVersion1), HttpMethod.Post, ct, parameters, true).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<VALRIdResult>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<VALRIdResult>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
         }
         #endregion
         #endregion
