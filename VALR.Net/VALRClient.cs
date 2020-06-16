@@ -51,6 +51,7 @@ namespace VALR.Net
         private const string AllOpenOrdersEndpoint = "orders/open";
         private const string OrderHistoryEndpoint = "orders/history?skip={}&limit={}";
         private const string OrderHistorySummaryByOrderIdEndpoint = "orders/history/summary/orderid/{}";
+        private const string OrderHistorySummaryByCustomerOrderIdEndpoint = "orders/history/summary/customerorderid/{}";
         #endregion
 
         #region constructor/destructor
@@ -831,7 +832,7 @@ namespace VALR.Net
         /// <param name="ct">Cancellation token</param>
         /// </summary>
         /// <returns></returns>
-        public WebCallResult<VALRHistoricalOrder> OrderHistorySummaryByOrderId(string orderId, CancellationToken ct = default) => OrderHistorySummaryByOrderIdAsync(orderId, ct).Result;
+        public WebCallResult<VALRHistoricalOrderSummary> OrderHistorySummaryByOrderId(string orderId, CancellationToken ct = default) => OrderHistorySummaryByOrderIdAsync(orderId, ct).Result;
 
         /// <summary>
         /// An order is considered completed when the "Order Status" call returns one of the following statuses: 
@@ -841,12 +842,38 @@ namespace VALR.Net
         /// <param name="ct">Cancellation token</param>
         /// </summary>
         /// <returns></returns>
-        public async Task<WebCallResult<VALRHistoricalOrder>> OrderHistorySummaryByOrderIdAsync(string orderId, CancellationToken ct = default)
+        public async Task<WebCallResult<VALRHistoricalOrderSummary>> OrderHistorySummaryByOrderIdAsync(string orderId, CancellationToken ct = default)
         {
-            var result = await SendRequest<VALRHistoricalOrder>(GetUrl(FillPathParameter(OrderHistorySummaryByOrderIdEndpoint, orderId), ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
+            var result = await SendRequest<VALRHistoricalOrderSummary>(GetUrl(FillPathParameter(OrderHistorySummaryByOrderIdEndpoint, orderId), ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
             if (!result)
-                return WebCallResult<VALRHistoricalOrder>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
-            return new WebCallResult<VALRHistoricalOrder>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+                return WebCallResult<VALRHistoricalOrderSummary>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<VALRHistoricalOrderSummary>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
+
+        /// <summary>
+        /// An order is considered completed when the "Order Status" call returns one of the following statuses: 
+        /// "Filled", "Cancelled" or "Failed". When this happens, you can get a more detailed summary about this 
+        /// order using this call. Orders that are not completed are invalid for this request.
+        /// <param name="customerOrderId">Order Id provided by VALR eg. "8ca691c4-9be8-4427-ae5e-905cdfc18491"</param>
+        /// <param name="ct">Cancellation token</param>
+        /// </summary>
+        /// <returns></returns>
+        public WebCallResult<VALRHistoricalOrderSummary> OrderHistorySummaryByCustomerOrderId(string customerOrderId, CancellationToken ct = default) => OrderHistorySummaryByCustomerOrderIdAsync(customerOrderId, ct).Result;
+
+        /// <summary>
+        /// An order is considered completed when the "Order Status" call returns one of the following statuses: 
+        /// "Filled", "Cancelled" or "Failed". When this happens, you can get a more detailed summary about this 
+        /// order using this call. Orders that are not completed are invalid for this request.
+        /// <param name="orderId">Order Id provided by VALR eg. "8ca691c4-9be8-4427-ae5e-905cdfc18491"</param>
+        /// <param name="ct">Cancellation token</param>
+        /// </summary>
+        /// <returns></returns>
+        public async Task<WebCallResult<VALRHistoricalOrderSummary>> OrderHistorySummaryByCustomerOrderIdAsync(string customerOrderId, CancellationToken ct = default)
+        {
+            var result = await SendRequest<VALRHistoricalOrderSummary>(GetUrl(FillPathParameter(OrderHistorySummaryByCustomerOrderIdEndpoint, customerOrderId), ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<VALRHistoricalOrderSummary>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<VALRHistoricalOrderSummary>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
         }
         #endregion
         #endregion
