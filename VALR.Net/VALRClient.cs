@@ -45,6 +45,7 @@ namespace VALR.Net
         private const string SimpleBuySellOrderEndpoint = "simple/{}/order";
         private const string SimpleBuySellOrderStatusEndpoint = "simple/{}/order/{}";
         private const string LimitOrderEndpoint = "orders/limit";
+        private const string MarketOrderEndpoint = "orders/market";
         #endregion
 
         #region constructor/destructor
@@ -682,6 +683,44 @@ namespace VALR.Net
 
             //TODO: Keeps complaining about invalid signature even though authenticator signing test passes???
             var result = await SendRequest<VALRIdResult>(GetUrl(LimitOrderEndpoint, ApiVersion1), HttpMethod.Post, ct, parameters, true).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<VALRIdResult>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<VALRIdResult>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
+
+        /// <summary>
+        /// Create a new market order. 
+        /// </summary>
+        /// <param name="side"></param>
+        /// <param name="baseAmount"></param>
+        /// <param name="pair"></param>
+        /// <param name="customerOrderId"></param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns></returns>
+        public WebCallResult<VALRIdResult> MarketOrder(TradeSide side, decimal baseAmount, string pair, string customerOrderId, CancellationToken ct = default)
+            => MarketOrderAsync(side, baseAmount, pair, customerOrderId, ct).Result;
+
+        /// <summary>
+        /// Create a new market order. 
+        /// </summary>
+        /// <param name="side">BUY or SELL</param>
+        /// <param name="baseAmount">Quote amount for BUY (in ZAR). Base amount for SELL (in BTC, ETH or XRP). The base amount will be truncated to baseDecimalPlaces of the currency pair.</param>
+        /// <param name="pair">Can be BTCZAR, ETHZAR or XRPZAR</param>
+        /// <param name="customerOrderId">Customers own order id</param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns></returns>
+        public async Task<WebCallResult<VALRIdResult>> MarketOrderAsync(TradeSide side, decimal baseAmount, string pair, string customerOrderId, CancellationToken ct = default)
+        {
+            var parameters = new Dictionary<string, object>
+            {
+                { "side", side.ToString() },
+                { "baseAmount", baseAmount },
+                { "pair", pair },
+                { "customerOrderId", customerOrderId }
+            };
+
+            //TODO: Keeps complaining about invalid signature even though authenticator signing test passes???
+            var result = await SendRequest<VALRIdResult>(GetUrl(MarketOrderEndpoint, ApiVersion1), HttpMethod.Post, ct, parameters, true).ConfigureAwait(false);
             if (!result)
                 return WebCallResult<VALRIdResult>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
             return new WebCallResult<VALRIdResult>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
