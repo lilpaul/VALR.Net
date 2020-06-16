@@ -734,6 +734,7 @@ namespace VALR.Net
         /// </summary>
         /// <param name="currencyPair">The currency pair to trade in</param>
         /// <param name="orderId">The Id of the order to check status for</param>
+        /// <param name="ct">Cancellation token</param>
         /// <returns></returns>
         public WebCallResult<VALROrderStatusResult> OrderStatusByOrderId(string currencyPair, string orderId, CancellationToken ct = default) => OrderStatusByOrderIdAsync(currencyPair, orderId, ct).Result;
 
@@ -742,6 +743,7 @@ namespace VALR.Net
         /// </summary>
         /// <param name="currencyPair">The currency pair to trade in</param>
         /// <param name="orderId">The Id of the order to check status for</param>
+        /// <param name="ct">Cancellation token</param>
         /// <returns></returns>
         public async Task<WebCallResult<VALROrderStatusResult>> OrderStatusByOrderIdAsync(string currencyPair, string orderId, CancellationToken ct = default)
         {
@@ -756,6 +758,7 @@ namespace VALR.Net
         /// </summary>
         /// <param name="currencyPair">The currency pair to trade in</param>
         /// <param name="customerOrderId">The customer order Id of the order to check status for</param>
+        /// <param name="ct">Cancellation token</param>
         /// <returns></returns>
         public WebCallResult<VALROrderStatusResult> OrderStatusByCustomerOrderId(string currencyPair, string customerOrderId, CancellationToken ct = default) => OrderStatusByCustomerOrderIdAsync(currencyPair, customerOrderId, ct).Result;
 
@@ -764,6 +767,7 @@ namespace VALR.Net
         /// </summary>
         /// <param name="currencyPair">The currency pair to trade in</param>
         /// <param name="customerOrderId">The customer order Id of the order to check status for</param>
+        /// <param name="ct">Cancellation token</param>
         /// <returns></returns>
         public async Task<WebCallResult<VALROrderStatusResult>> OrderStatusByCustomerOrderIdAsync(string currencyPair, string customerOrderId, CancellationToken ct = default)
         {
@@ -775,12 +779,14 @@ namespace VALR.Net
 
         /// <summary>
         /// Get all open orders for your account.
+        /// <param name="ct">Cancellation token</param>
         /// </summary>
         /// <returns></returns>
         public WebCallResult<IEnumerable<VALROpenOrder>> AllOpenOrders(CancellationToken ct = default) => AllOpenOrdersAsync(ct).Result;
 
         /// <summary>
         /// Get all open orders for your account.
+        /// <param name="ct">Cancellation token</param>
         /// </summary>
         /// <returns></returns>
         public async Task<WebCallResult<IEnumerable<VALROpenOrder>>> AllOpenOrdersAsync(CancellationToken ct = default)
@@ -789,6 +795,30 @@ namespace VALR.Net
             if (!result)
                 return WebCallResult<IEnumerable<VALROpenOrder>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
             return new WebCallResult<IEnumerable<VALROpenOrder>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
+
+        /// <summary>
+        /// Get historical orders placed by you.
+        /// <param name="skip">Skip number of items from the list. (pagination)</param>
+        /// <param name="limit">Limit the number of items returned. (pagination)</param>
+        /// <param name="ct">Cancellation token</param>
+        /// </summary>
+        /// <returns></returns>
+        public WebCallResult<IEnumerable<VALRHistoricalOrder>> OrderHistory(int skip, int limit, CancellationToken ct = default) => OrderHistoryAsync(skip, limit, ct).Result;
+
+        /// <summary>
+        /// Get historical orders placed by you.
+        /// <param name="skip">Skip number of items from the list. (pagination)</param>
+        /// <param name="limit">Limit the number of items returned. (pagination)</param>
+        /// <param name="ct">Cancellation token</param>
+        /// </summary>
+        /// <returns></returns>
+        public async Task<WebCallResult<IEnumerable<VALRHistoricalOrder>>> OrderHistoryAsync(int skip, int limit, CancellationToken ct = default)
+        {
+            var result = await SendRequest<IEnumerable<VALRHistoricalOrder>>(GetUrl(AllOpenOrdersEndpoint, ApiVersion1), HttpMethod.Get, ct, null, true).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<IEnumerable<VALRHistoricalOrder>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<IEnumerable<VALRHistoricalOrder>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
         }
         #endregion
         #endregion
