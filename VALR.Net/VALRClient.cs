@@ -54,6 +54,7 @@ namespace VALR.Net
         private const string OrderHistorySummaryByCustomerOrderIdEndpoint = "orders/history/summary/customerorderid/{}";
         private const string OrderHistoryDetailByOrderIdEndpoint = "orders/history/detail/orderid/{}";
         private const string OrderHistoryDetailByCustomerOrderIdEndpoint = "orders/history/detail/customerorderid/{}";
+        private const string CancelOpenOrderEndpoint = "orders/order";
         #endregion
 
         #region constructor/destructor
@@ -925,6 +926,37 @@ namespace VALR.Net
             if (!result)
                 return WebCallResult<IEnumerable<VALRHistoricalOrderDetail>>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
             return new WebCallResult<IEnumerable<VALRHistoricalOrderDetail>>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
+        }
+
+        /// <summary>
+        /// Cancel an open order. 
+        /// </summary>
+        /// <param name="orderId"></param>
+        /// <param name="pair"></param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns></returns>
+        public WebCallResult<VALRCodeMessageResult> CancelOpenOrder(string orderId, string pair, CancellationToken ct = default)
+            => CancelOpenOrderAsync(orderId, pair, ct).Result;
+
+        /// <summary>
+        /// Cancel an open order. 
+        /// </summary>
+        /// <param name="orderId"></param>
+        /// <param name="pair"></param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns></returns>
+        public async Task<WebCallResult<VALRCodeMessageResult>> CancelOpenOrderAsync(string orderId, string pair, CancellationToken ct = default)
+        {
+            var parameters = new Dictionary<string, object>
+            {
+                { "orderId", orderId },
+                { "pair", pair }
+            };
+
+            var result = await SendRequest<VALRCodeMessageResult>(GetUrl(CancelOpenOrderEndpoint, ApiVersion1), HttpMethod.Delete, ct, parameters, true).ConfigureAwait(false);
+            if (!result)
+                return WebCallResult<VALRCodeMessageResult>.CreateErrorResult(result.ResponseStatusCode, result.ResponseHeaders, result.Error!);
+            return new WebCallResult<VALRCodeMessageResult>(result.ResponseStatusCode, result.ResponseHeaders, result.Data, null);
         }
         #endregion
         #endregion
